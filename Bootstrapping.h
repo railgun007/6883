@@ -13,7 +13,8 @@ public:
 	vector<vector<string>>groups;
 	void Sampling_Idx(vector<int>& return_vec, int idx_max, int k) const;
 	void Sampling_Name(vector<string>& return_vec, vector<string>group) const;
-	map<string, pair<double, double>>bench_mark;
+	map<string, pair<double, double>>benchmark;
+	void set_benchmark();
 	void Calculate(Matrix& return_mat) const;
 	double stdev(Vector& series) const;
 	void Download_stock(vector<pair<string, string>>);
