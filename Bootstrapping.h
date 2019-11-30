@@ -12,6 +12,7 @@ public:
 	int num_group;
 	map<string, pair<double, double>>benchmark;
 	vector<vector<string>>groups;
+	vector<string> surprising_list;
 	void Sampling_Idx(vector<int>& return_vec, int idx_max, int k) const;
 	void Sampling_Name(vector<string>& return_vec, vector<string>group) const;
 	void set_benchmark() const;
