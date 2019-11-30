@@ -1,4 +1,4 @@
-vector<vector<string>> divide_vector(const vector<string>& vec){
+vector<vector<string>> Divide_Vector(const vector<string>& vec){
     int vec_len=vec.size();
     int base=vec.size()/3;
     vector<string> v1,v2,v3;
