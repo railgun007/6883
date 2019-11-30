@@ -10,10 +10,10 @@ typedef vector<vector<double>> Matrix;
 class Bootstrapping {
 public:
 	int num_group;
+	map<string, pair<double, double>>benchmark;
 	vector<vector<string>>groups;
 	void Sampling_Idx(vector<int>& return_vec, int idx_max, int k) const;
 	void Sampling_Name(vector<string>& return_vec, vector<string>group) const;
-	map<string, pair<double, double>>benchmark;
 	void set_benchmark();
 	void Calculate(Matrix& return_mat) const;
 	double stdev(Vector& series) const;
