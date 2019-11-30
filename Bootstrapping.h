@@ -15,7 +15,7 @@ public:
 	void Sampling_Name(vector<string>& return_vec, vector<string>group) const;
 	map<string, pair<double, double>>bench_mark;
 	void Calculate(Matrix& return_mat) const;
-	double Std(Vector& series) const;
+	double stdev(Vector& series) const;
 	void Download_stock(vector<pair<string, string>>);
 };
 #endif
