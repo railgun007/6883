@@ -1,7 +1,7 @@
 
 #include "Bootstrapping.h"
 
-double Bootstrapping::Std(Vector& series) const {
+double Bootstrapping::stdev(Vector& series) const {
 	double sum = 0;
 	for (int i = 0; i < series.size(); i++) {
 		sum = sum + series[i];
