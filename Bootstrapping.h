@@ -19,5 +19,6 @@ public:
 	void Calculate(Matrix& return_mat) const;
 	double stdev(Vector& series) const;
 	void Download_stock(vector<pair<string, string>>);
+	Bootstrapping(vector<string> surp){surprising_list=surp;groups=Devide_Vector(surp)};
 };
 #endif
