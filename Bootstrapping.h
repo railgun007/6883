@@ -2,8 +2,8 @@
 #include <iostream>
 #include <map>
 using namespace std;
-#ifndef BOOTSTRAPPING
-#define BOOTSTRAPPING
+#ifndef BOOTSTRAPPING_h
+#define BOOTSTRAPPING_h
 typedef vector<double> Vector; 
 typedef vector<vector<double>> Matrix;
 
