@@ -73,6 +73,12 @@ double BootStrapping::Stdev(Vector& series) const
 	}
 	return sqrt(sqrsum / series.size());
 }
+double BootStrapping::Mean(Vector& series) const
+{
+	double sum = 0;
+	for_each(series.begin(), series.end(), [&](auto ele) {sum += ele; });
+	return sum / series.size();
+}
 
 void BootStrapping::Divide_vector(const vector<pair<string, string>>& vec)
 {
@@ -80,25 +86,81 @@ void BootStrapping::Divide_vector(const vector<pair<string, string>>& vec)
 	groups.resize(num_group);
 	for (int i = 0; i < num_group - 1; i++)//fill 0~n-2 rows in groups with fixed length
 	{
-		for (int j = (int)(i * vec.size() / (double)num_group); j < (int)((i + 1) * vec.size() / (double)num_group); j++)
+		for (int j = (int)((double)i * (double)vec.size() / (double)num_group); j < (int)(((double)i + 1) * (double)vec.size() / (double)num_group); j++)
 		{
-			groups[i].push_back(vec[j].first);
+			groups[i].push_back(vec[j]);
 		}
 	}
-	for (int j = (int)((num_group - 1) * vec.size() / (double)num_group); j < vec.size(); j++)// fill the rest of vec into n-1(last) row
+	for (int j = (int)(((double)num_group - 1) * (double)vec.size() / (double)num_group); j < vec.size(); j++)// fill the rest of vec into n-1(last) row
 	{
-		groups[num_group - 1].push_back(vec[j].first);
+		groups[num_group - 1].push_back(vec[j]);
 	}
 }
-void BootStrapping::Sampling_name(vector<string*>& return_vec, vector<string>& group, int sampling_num) const
+
+void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, int sampling_num, int sampling_times)
 {
-	return_vec.resize(sampling_num);
-	if (group.size() < sampling_num) { return; }
-	vector<int> vect;
-	for (int i = 0; i < group.size(); i++) vect.push_back(i);
-	random_shuffle(vect.begin(), vect.end());
-	for (int i = 0; i < return_vec.size(); i++) 
+	const int date_num = 30;
+	return_mat.resize(num_group);
+	for (int group_cont = 0; group_cont < num_group; group_cont++)//for each group (i.e. best/media/worst group)
 	{
-		return_vec[i] = &group[vect[i]];
+		Matrix AARt_mat(2 * date_num, Vector(sampling_times, 0));
+		Matrix CAAR_mat(2 * date_num, Vector(sampling_times, 0));
+		for (int j = 0; j < sampling_times; j++)//for each time's sampling
+		{
+			vector<const pair<string, string>*> sample_name;
+			Sampling_name<pair<string, string>>(sample_name, groups[group_cont], sampling_num);//sample_name contains name,release_date of stocks
+			Matrix AAit(2 * date_num, Vector(sampling_num, 0));//(60*30) matrix
+			for (auto itr = sample_name.begin(); itr != sample_name.end(); itr++)//for each stock
+			{
+				int AAit_j = 0;
+				stock* current_stock_ptr = data_container.stock_map[(*itr)->first];
+				int start_idx = distance(current_stock_ptr->alltime.begin(), find(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), (*itr)->second)) - date_num;
+				for (int i = start_idx + 1; i < start_idx + 2 * date_num + 1; i++)//for each day
+				{
+					int AAit_i = i - (start_idx + 1);
+					if (isnan(current_stock_ptr->abnormal_return[i]))//if nan, then calculate and store it
+					{
+						double stock_r = (current_stock_ptr->adjustedprice[i] - current_stock_ptr->adjustedprice[i - 1]) / current_stock_ptr->adjustedprice[i - 1];
+						current_stock_ptr->abnormal_return[i] = stock_r - benchmark[(*itr)->second].second;
+					}
+					AAit[AAit_i][AAit_j] = current_stock_ptr->abnormal_return[i];
+					AAit_i++;
+				}
+				AAit_j++;
+			}
+			Vector sample_AARt(AAit.size(), 0);
+			Vector sample_CAAR(AAit.size(), 0);
+			sample_AARt[0]= Mean(AAit[0]);
+			sample_CAAR[0] = sample_AARt[0];
+			for (int k = 1; k < AAit.size(); k++)
+			{
+				sample_AARt[k] = Mean(AAit[k]);
+				sample_CAAR[k] = sample_CAAR[k - 1] + sample_AARt[k];
+			}
+			/*AARt = (1 / (j + 1)) * (j * AARt + sample_AARt);
+			CAAR = (1 / (j + 1)) * (j * CAAR + sample_CAAR);*/
+			for (int k = 0; k < 2 * date_num; k++)
+			{
+				AARt_mat[k][j] = sample_AARt[k];
+				CAAR_mat[k][j] = sample_CAAR[k];
+			}
+		}
+		Vector AAR(AARt_mat.size(), 0);
+		Vector AAR_SD(AARt_mat.size(), 0);
+		Vector CAAR(CAAR_mat.size(), 0);
+		Vector CAAR_SD(CAAR_mat.size(), 0);
+		for (int k = 0; k < 2 * date_num; k++)
+		{
+			AAR[k] = Mean(AARt_mat[k]);
+			AAR_SD[k] = Stdev(AARt_mat[k]);
+			CAAR[k] = Mean(CAAR_mat[k]);
+			CAAR_SD[k] = Stdev(CAAR_mat[k]);
+		}
+		Matrix temp = { AAR,AAR_SD,CAAR,CAAR_SD };
+		/*temp.push_back(AAR);
+		temp.push_back(AAR_SD);
+		temp.push_back(CAAR);
+		temp.push_back(CAAR_SD);*/
+		return_mat.push_back(temp);
 	}
 }

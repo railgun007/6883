@@ -18,6 +18,7 @@ public:
 	stock(string name_, string time_) { time = time_; name = name_; }
 	vector<double> adjustedprice;
 	vector<string> alltime;
+	vector<double> abnormal_return;
 	void display();
 };
 class StockData

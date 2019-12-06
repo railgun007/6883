@@ -131,6 +131,7 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 		dValue = strtod(sValue.c_str(), NULL);
 		newstock->adjustedprice.push_back(dValue);
 		newstock->alltime.push_back(sDate);
+		newstock->abnormal_return.push_back(NAN);
 		//   cout << sDate << " " << std::fixed << ::setprecision(6) << dValue << endl;
 	}
 }
@@ -139,7 +140,7 @@ void stock::display()
 {
 	for (auto i = 0; i < alltime.size(); i++)
 	{
-		cout << alltime[i] << "\t" << adjustedprice[i] << endl;
+		cout << alltime[i] << "\t" << adjustedprice[i] << "\t" << abnormal_return[i] << endl;
 	}
 	cout << "stock destructor called" << endl;
 }
@@ -193,9 +194,10 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list)
 	{
 		while (itr != stock_list.end())
 		{
-			stock* newstock = new stock((*itr).first, (*itr).second);
-			startTime = to_string(stoi(getTimeinSeconds((*itr).second)) - redundant_day * 86400);
-			endTime = to_string(stoi(getTimeinSeconds((*itr).second)) + redundant_day * 86400);
+			const string date_suffix = "T16:00:00";
+			stock* newstock = new stock((*itr).first, (*itr).second + date_suffix);
+			startTime = to_string(stoi(getTimeinSeconds((*itr).second + date_suffix)) - redundant_day * 86400);
+			endTime = to_string(stoi(getTimeinSeconds((*itr).second + date_suffix)) + redundant_day * 86400);
 			if (Download_data(newstock, (*itr).first, startTime, endTime, data, outfilename, handle) != 1)
 			{
 				stock_map.insert(make_pair((*itr).first, newstock));
