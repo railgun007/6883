@@ -99,6 +99,7 @@ void BootStrapping::Divide_vector(const vector<pair<string, string>>& vec)
 
 void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, int sampling_num, int sampling_times)
 {
+	const string date_suffix = "T16:00:00";
 	const int date_num = 30;
 	return_mat.resize(num_group);
 	for (int group_cont = 0; group_cont < num_group; group_cont++)//for each group (i.e. best/media/worst group)
@@ -110,14 +111,38 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 			vector<const pair<string, string>*> sample_name;
 			Sampling_name<pair<string, string>>(sample_name, groups[group_cont], sampling_num);//sample_name contains name,release_date of stocks
 			Matrix AAit(2 * date_num, Vector(sampling_num, 0));//(60*30) matrix
+			int AAit_j = 0;
 			for (auto itr = sample_name.begin(); itr != sample_name.end(); itr++)//for each stock
 			{
-				int AAit_j = 0;
 				stock* current_stock_ptr = data_container.stock_map[(*itr)->first];
-				int start_idx = distance(current_stock_ptr->alltime.begin(), find(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), (*itr)->second)) - date_num;
+				string search_date = (*itr)->second;
+				int start_idx;
+				auto search_itr = find(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), search_date);
+				if (search_itr != current_stock_ptr->alltime.end())
+				{
+					start_idx = distance(current_stock_ptr->alltime.begin(), search_itr) - date_num;
+				}
+				else
+				{
+					vector<int> alltime_sec;
+					for_each(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), [&](auto ele)
+						{
+							alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
+						}
+					);
+					int search_date_sec = stoi(getTimeinSeconds(search_date + date_suffix));
+					auto search_sec_itr = find(alltime_sec.begin(), alltime_sec.end(), search_date_sec);
+					while (search_sec_itr == alltime_sec.end())//while loop backward until search out a date existing in stock data
+					{
+						search_date_sec -= 86400;
+						search_sec_itr = find(alltime_sec.begin(), alltime_sec.end(), search_date_sec);
+					}
+					start_idx = distance(alltime_sec.begin(), search_sec_itr) - date_num;
+				}
+
+				int AAit_i = 0;
 				for (int i = start_idx + 1; i < start_idx + 2 * date_num + 1; i++)//for each day
 				{
-					int AAit_i = i - (start_idx + 1);
 					if (isnan(current_stock_ptr->abnormal_return[i]))//if nan, then calculate and store it
 					{
 						double stock_r = (current_stock_ptr->adjustedprice[i] - current_stock_ptr->adjustedprice[i - 1]) / current_stock_ptr->adjustedprice[i - 1];
@@ -130,7 +155,7 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 			}
 			Vector sample_AARt(AAit.size(), 0);
 			Vector sample_CAAR(AAit.size(), 0);
-			sample_AARt[0]= Mean(AAit[0]);
+			sample_AARt[0] = Mean(AAit[0]);
 			sample_CAAR[0] = sample_AARt[0];
 			for (int k = 1; k < AAit.size(); k++)
 			{
@@ -157,6 +182,6 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 			CAAR_SD[k] = Stdev(CAAR_mat[k]);
 		}
 		Matrix temp = { AAR,AAR_SD,CAAR,CAAR_SD };
-		return_mat[group_cont]=temp;
+		return_mat[group_cont] = temp;
 	}
 }
