@@ -15,8 +15,12 @@ public:
 	Vector estimated_eps;
 	Vector suprise;
 	ReadEPS() {};
-	ReadEPS(string csv_address) { Read_csv(csv_address); }
+	ReadEPS(string csv_address) 
+	{ 
+		Read_csv(csv_address);
+		suprise = (eps - estimated_eps) / estimated_eps;
+	}
 	void Read_csv(string csv_address);
-	vector<pair<string, string>> sort_by_suprise();
+	void sort_by_suprise(vector<pair<string, string>>& out_vec);
 };
 #endif // !ReadEPS_h

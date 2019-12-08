@@ -2,7 +2,8 @@
 #include <fstream>
 #include <sstream>
 
-void ReadEPS::Read_csv(string csv_address) {
+void ReadEPS::Read_csv(string csv_address)
+{
 	vector<string> matrix;
 	//readfile
 	fstream file;
@@ -36,7 +37,7 @@ void ReadEPS::Read_csv(string csv_address) {
 }
 
 
-vector<pair<string, string>> ReadEPS::sort_by_suprise()
+void ReadEPS::sort_by_suprise(vector<pair<string, string>>& out_vec)
 {
 
 	vector<tuple<string, string, double>>temp;
@@ -46,7 +47,5 @@ vector<pair<string, string>> ReadEPS::sort_by_suprise()
 	}
 
 	sort(temp.begin(), temp.end(), [](auto x, auto y) {get<2>(x) < get<2>(y); });
-	vector<pair<string, string>>out_vec;
 	for_each(temp.begin(), temp.end(), [&](auto ele) {out_vec.push_back(make_pair(get<0>(ele), get<1>(ele)); });
-	return out_vec;
 }
