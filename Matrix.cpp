@@ -21,6 +21,14 @@ Vector operator+(const Vector& V,const Vector& W)
    return U;
 }
 
+Vector operator-(const Vector& V,const Vector& W)
+{
+   int d = V.size();
+   Vector U(d);
+   for (int j=0; j<d; j++) U[j] = V[j] - W[j];
+   return U;
+}
+
 Vector operator+(const double& a,const Vector& V)
 {
    int d = V.size();
