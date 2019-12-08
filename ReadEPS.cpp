@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-void Read_csv(string csv_address) {
+void ReadEPS::Read_csv(string csv_address) {
 	vector<string> matrix;
 	//readfile
 	fstream file;
