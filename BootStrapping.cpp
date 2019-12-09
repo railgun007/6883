@@ -20,7 +20,7 @@ void BootStrapping::set_benchmark(StockData& data_container, string bench_mark_n
 	data.size = 0;
 
 	// file pointer to create file that store the data
-	//FILE* fp;
+	FILE* fp = NULL;
 
 	// name of files  
 	const char outfilename[FILENAME_MAX] = "Output.txt";
@@ -29,7 +29,7 @@ void BootStrapping::set_benchmark(StockData& data_container, string bench_mark_n
 	// declaration of an object CURL
 	CURL* handle;
 
-	//CURLcode result;
+	CURLcode result;
 
 	// set up the program environment that libcurl needs 
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -41,7 +41,7 @@ void BootStrapping::set_benchmark(StockData& data_container, string bench_mark_n
 		stock* new_bench_mark = new stock(bench_mark_name, "");
 		string startTime = to_string(smallest_time_sec);
 		string endTime = to_string(largest_time_sec);
-		Download_data(new_bench_mark, bench_mark_name, startTime, endTime, data, outfilename, handle);
+		Download_data(new_bench_mark, bench_mark_name, startTime, endTime, data, outfilename, handle, fp, result);
 		benchmark.insert(pair<string, pair<double, double>>(new_bench_mark->alltime[0], pair<double, double>(new_bench_mark->adjustedprice[0], NAN)));
 		for (int i = 1; i < new_bench_mark->adjustedprice.size(); i++)
 		{

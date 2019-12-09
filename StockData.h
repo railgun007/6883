@@ -32,5 +32,5 @@ public:
 	void display();
 	~StockData();
 };
-int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct data, const char outfilename[FILENAME_MAX], CURL* handle);
+int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct& data, const char outfilename[FILENAME_MAX], CURL* handle, FILE* fp, CURLcode& result);
 #endif // !StockData_h

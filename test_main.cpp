@@ -13,7 +13,7 @@ int main()
 	
 	StockData data_container;
 	data_container.Multi_thread_Download_stock(stock_list);
-	data_container.filter(data_container.stock_map, stock_list);
+	/*data_container.filter(data_container.stock_map, stock_list);*/
 	//data_container.display();
 
 	BootStrapping obj(stock_list);

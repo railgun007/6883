@@ -1,9 +1,9 @@
 #include "StockData.h"
 
-int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct data, const char outfilename[FILENAME_MAX], CURL* handle)
+int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct& data, const char outfilename[FILENAME_MAX], CURL* handle, FILE* fp, CURLcode& result)
 {
-	FILE* fp;
-	CURLcode result;
+	/*FILE* fp;
+	CURLcode result;*/
 	string sCookies, sCrumb;
 	if (sCookies.length() == 0 || sCrumb.length() == 0)
 	{
@@ -172,7 +172,7 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list, map<stri
 	data.size = 0;
 
 	// file pointer to create file that store the data  
-	//FILE* fp;
+	FILE* fp = NULL;
 
 	// name of files  
 	const char outfilename[FILENAME_MAX] = "Output.txt";
@@ -181,7 +181,7 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list, map<stri
 	// declaration of an object CURL 
 	CURL* handle;
 
-	//CURLcode result;
+	CURLcode result;
 
 	// set up the program environment that libcurl needs 
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -198,7 +198,7 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list, map<stri
 			stock* newstock = new stock((*itr).first, (*itr).second + date_suffix);
 			startTime = to_string(stoi(getTimeinSeconds((*itr).second + date_suffix)) - redundant_day * 86400);
 			endTime = to_string(stoi(getTimeinSeconds((*itr).second + date_suffix)) + redundant_day * 86400);
-			if (Download_data(newstock, (*itr).first, startTime, endTime, data, outfilename, handle) != 1)
+			if (Download_data(newstock, (*itr).first, startTime, endTime, data, outfilename, handle, fp, result) != 1)
 			{
 				stock_map.insert(make_pair((*itr).first, newstock));
 				itr++;
