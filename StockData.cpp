@@ -254,21 +254,14 @@ void StockData::Multi_thread_Download_stock(vector<pair<string, string>>& stock_
 
 void StockData::filter(map<string, stock*>& stock_map, vector<pair<string, string>>& stock_list)
 {
-	for (auto itr = stock_map.begin(); itr != stock_map.end(); itr++)
+	vector<pair<string, string>> new_stock_list;
+	for (auto itr = stock_list.begin(); itr != stock_list.end(); itr++)
 	{
-		string date = (*itr).second->getdate();
-		vector<string>::iterator ite1 = find((*itr).second->alltime.begin(), (*itr).second->alltime.end(), date);
-		auto index = distance(begin((*itr).second->alltime), ite1);
-		if ((index < 30) || ((*itr).second->alltime.size() - index) < 30)
-		{
-			stock_map.erase(itr);
-			string name = itr->second->getname();
-			for (auto itr2 = stock_list.begin(); itr2 != stock_list.end(); itr2++)
-			{
-				if (name == itr2->first)
-					stock_list.erase(itr2);
-			}
-		}
-
+		string release_date = itr->second;
+		auto ite1 = find(stock_map[itr->first]->alltime.begin(), stock_map[itr->first]->alltime.end(), release_date);
+		int index = distance(stock_map[itr->first]->alltime.begin(), ite1);
+		if (index < 30 || (stock_map[itr->first]->alltime.size() - index) < 30) { stock_map.erase(itr->first); }
+		else { new_stock_list.push_back(*itr); }
 	}
+	stock_list = new_stock_list;
 }
