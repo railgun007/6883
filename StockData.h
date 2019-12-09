@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <thread>
 #include "WriteData.h"
 using namespace std;
 
@@ -25,7 +26,9 @@ class StockData
 {
 public:
 	map<string, stock*> stock_map;
-	int Download_stock(vector<pair<string, string>>& stock_list);
+	static int Download_stock(vector<pair<string, string>>& stock_list, map<string, stock*>& stock_map);
+	void Multi_thread_Download_stock(vector<pair<string, string>>& stock_list);
+	void filter(map<string, stock*>& stock_map, vector<pair<string, string>>& stock_list);
 	void display();
 	~StockData();
 };

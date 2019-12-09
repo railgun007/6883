@@ -160,7 +160,7 @@ StockData::~StockData()
 		(*itr).second = NULL;
 	}
 }
-int StockData::Download_stock(vector<pair<string, string>>& stock_list)
+int StockData::Download_stock(vector<pair<string, string>>& stock_list, map<string, stock*>& stock_map)
 {
 	const int redundant_day = 60;//redundant day before/after pivot
 	string startTime;
@@ -212,5 +212,63 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list)
 	{
 		fprintf(stderr, "Curl init failed!\n");
 		return 1;
+	}
+}
+
+void StockData::Multi_thread_Download_stock(vector<pair<string, string>>& stock_list)
+{
+	const int num_list = 8;//thread number
+	vector< map<string, stock*>>temp_map_vec(num_list);
+	vector< vector<pair<string, string>>> temp_stock_list_vec(num_list);
+	for (int i = 0; i < num_list - 1; i++)//divide stock_list into 4 temp_list
+	{
+		for (int j = (int)((double)i * (double)stock_list.size() / (double)num_list); j < (int)(((double)i + 1) * (double)stock_list.size() / (double)num_list); j++)
+		{
+			temp_stock_list_vec[i].push_back(stock_list[j]);
+		}
+	}
+	for (int j = (int)(((double)num_list - 1) * (double)stock_list.size() / (double)num_list); j < stock_list.size(); j++)// fill the rest of vec into n-1(last) row
+	{
+		temp_stock_list_vec[num_list - 1].push_back(stock_list[j]);
+	}
+
+	vector<thread> threads;
+	for (int i = 0; i < num_list; i++)
+	{
+		threads.push_back(thread(Download_stock, ref(temp_stock_list_vec[i]), ref(temp_map_vec[i])));
+	}
+	for (int i = 0; i < num_list; i++)
+	{
+		threads[i].join();
+	}
+
+	stock_map.clear();
+	for (auto itr = temp_map_vec.begin(); itr != temp_map_vec.end(); itr++)
+	{
+		for (auto itr2 = (*itr).begin(); itr2 != (*itr).end(); itr2++)
+		{
+			stock_map.insert(*itr2);
+		}
+	}
+}
+
+void StockData::filter(map<string, stock*>& stock_map, vector<pair<string, string>>& stock_list)
+{
+	for (auto itr = stock_map.begin(); itr != stock_map.end(); itr++)
+	{
+		string date = (*itr).second->getdate();
+		vector<string>::iterator ite1 = find((*itr).second->alltime.begin(), (*itr).second->alltime.end(), date);
+		auto index = distance(begin((*itr).second->alltime), ite1);
+		if ((index < 30) || ((*itr).second->alltime.size() - index) < 30)
+		{
+			stock_map.erase(itr);
+			string name = itr->second->getname();
+			for (auto itr2 = stock_list.begin(); itr2 != stock_list.end(); itr2++)
+			{
+				if (name == itr2->first)
+					stock_list.erase(itr2);
+			}
+		}
+
 	}
 }

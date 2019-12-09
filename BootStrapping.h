@@ -6,6 +6,7 @@
 #include <locale>
 #include <tuple>
 #include <algorithm>
+#include <time.h>
 
 using namespace std;
 //typedef vector<double> Vector;
@@ -34,6 +35,7 @@ public:
 template<typename T>
 void BootStrapping::Sampling_name(vector<const T*>& return_vec, const vector<T>& group, int sampling_num) const //must define here, otherwise Link error
 {
+	srand(clock());
 	return_vec.resize(sampling_num);
 	if (group.size() < sampling_num) { return; }
 	vector<int> vect;

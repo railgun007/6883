@@ -8,7 +8,7 @@ void Plot_results(double* xData, double* yData, double* yData2, double* yData3, 
 	const char* tempDataFileName3 = "Worst";
 	double x, y, x2, y2, x3, y3;
 	int i;
-	gnuplotPipe = _popen("D:/NYU0101/6883/gnuplot/gnuplot/bin/gnuplot.exe", "w");
+	gnuplotPipe = _popen("D:/Software/gnuplot/bin/gnuplot.exe", "w");
 	if (gnuplotPipe) {
 		fprintf(gnuplotPipe, "plot \"%s\" with lines,  \"%s\" with lines,  \"%s\" with lines\n ", tempDataFileName1, tempDataFileName2, tempDataFileName3);
 		fflush(gnuplotPipe);
