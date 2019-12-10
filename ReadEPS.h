@@ -25,7 +25,7 @@ public:
 		}
 	}
 	ReadEPS() {};
-	
+
 	void Read_csv(string csv_address);
 	void sort_by_suprise(vector<pair<string, string>>& out_vec);
 };

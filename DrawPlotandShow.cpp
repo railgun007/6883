@@ -33,7 +33,7 @@ void Plot_CAAR(const HMatrix& res_mat) {
 	const char* tempDataFileName3 = "Beat";
 	double x1, y1, x2, y2, x3, y3;
 
-	gnuplotPipe = _popen("D:/NYU0101/6883/gnuplot/gnuplot/bin/gnuplot.exe", "w");
+	gnuplotPipe = _popen("D:/Software/gnuplot/bin/gnuplot.exe", "w");
 	if (gnuplotPipe)
 	{
 		fprintf(gnuplotPipe, "plot \"%s\" with lines, \"%s\" with lines, \"%s\" with lines\n", tempDataFileName1,
@@ -91,7 +91,7 @@ void name_type(int which_type) {
 		CAAR,
 		CAAR_SD
 	};
-	switch (which_type-1) {
+	switch (which_type - 1) {
 	case AAR:
 		cout << "The AAR for ";
 		break;
@@ -114,7 +114,7 @@ void name_group(int which_group) {
 		Meet_Estimate_Group,
 		Beat_Estimate_Group
 	};
-	switch (which_group-1) {
+	switch (which_group - 1) {
 	case Miss_Estimate_Group:
 		cout << "Miss_Estimate_Group is";
 		break;
