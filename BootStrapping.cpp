@@ -57,7 +57,7 @@ void BootStrapping::print_benchmark() const
 {
 	cout << "benchmark : " << endl;
 	for_each(benchmark.begin(), benchmark.end(), [](pair<string, pair<double, double>> ele)
-		{cout << ele.first << "\t" << ele.second.first << "\t" << ele.second.second << endl; });
+	{cout << ele.first << "\t" << ele.second.first << "\t" << ele.second.second << endl; });
 }
 
 double BootStrapping::Stdev(Vector& series) const
@@ -130,9 +130,9 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 				{
 					vector<int> alltime_sec;
 					for_each(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), [&](auto ele)
-						{
-							alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
-						}
+					{
+						alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
+					}
 					);
 					int search_date_sec = stoi(getTimeinSeconds(search_date + date_suffix));
 					auto search_sec_itr = find(alltime_sec.begin(), alltime_sec.end(), search_date_sec);
