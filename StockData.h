@@ -17,6 +17,9 @@ public:
 	string getname() { return name; }
 	string getdate() { return time; }
 	stock(string name_, string time_) { time = time_; name = name_; }
+	int start_index;
+	int end_index;
+	int group_number;
 	vector<double> adjustedprice;
 	vector<string> alltime;
 	vector<double> abnormal_return;

@@ -115,12 +115,16 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 			for (auto itr = sample_name.begin(); itr != sample_name.end(); itr++)//for each stock
 			{
 				stock* current_stock_ptr = data_container.stock_map[(*itr)->first];
+				current_stock_ptr->group_number = group_cont;
 				string search_date = (*itr)->second;
 				int start_idx;
 				auto search_itr = find(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), search_date);
 				if (search_itr != current_stock_ptr->alltime.end())
 				{
 					start_idx = distance(current_stock_ptr->alltime.begin(), search_itr) - date_num;
+					current_stock_ptr->start_index = start_idx;
+					int end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
+					current_stock_ptr->end_index = end_idx;
 				}
 				else
 				{
@@ -138,6 +142,9 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 						search_sec_itr = find(alltime_sec.begin(), alltime_sec.end(), search_date_sec);
 					}
 					start_idx = distance(alltime_sec.begin(), search_sec_itr) - date_num;
+					current_stock_ptr->start_index = start_idx;
+					int end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
+					current_stock_ptr->end_index = end_idx;
 				}
 
 				int AAit_i = 0;
