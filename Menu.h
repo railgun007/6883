@@ -6,5 +6,5 @@
 #include "DrawPlotandShow.h"
 using namespace std;
 
-void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, ReadEPS& read_obj, HMatrix& res_mat, bool& WantToExit, bool& DataIsRetrived);
+void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, ReadEPS& read_obj, HMatrix& res_mat, const string& gnuplot_address, bool& WantToExit, bool& DataIsRetrived);
 #endif // !Menu_h

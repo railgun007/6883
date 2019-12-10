@@ -11,7 +11,8 @@ void Choose_to_show(int which_group, int which_type, const HMatrix& res_mat) {
 	for (int i = 0; i <= 59; i++) cout << res_mat[which_group - 1][which_type - 1][i] << endl;
 }
 
-void Plot_CAAR(const HMatrix& res_mat) {
+void Plot_CAAR(const HMatrix& res_mat, const string& gnuplot_address)
+{
 
 	getchar();
 	int nIntervals = 59;
@@ -33,7 +34,7 @@ void Plot_CAAR(const HMatrix& res_mat) {
 	const char* tempDataFileName3 = "Beat";
 	double x1, y1, x2, y2, x3, y3;
 
-	gnuplotPipe = _popen("D:/Software/gnuplot/bin/gnuplot.exe", "w");
+	gnuplotPipe = _popen(gnuplot_address.c_str(), "w");
 	if (gnuplotPipe)
 	{
 		fprintf(gnuplotPipe, "plot \"%s\" with lines, \"%s\" with lines, \"%s\" with lines\n", tempDataFileName1,

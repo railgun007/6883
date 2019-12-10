@@ -4,7 +4,7 @@
 #include "Matrix.h"
 
 void Choose_to_show(int which_group, int which_type, const HMatrix& res_mat);
-void Plot_CAAR(const HMatrix& res_mat);
+void Plot_CAAR(const HMatrix& res_mat, const string& gnuplot_address);
 void name_group(int);
 void name_type(int);
 #endif 
