@@ -6,7 +6,7 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 	cout << "====================== MENU of OPTIONS ======================" << endl << endl;
 	cout << "1. Retrieve historical price data for all stocks" << endl;
 	cout << "2. Pull information for one stock from one group" << endl;
-	cout << "3. Show AAR or CAAR for one Group" << endl;
+	cout << "3. Show AAR or AAR-SD or CAAR or CAAR-SD for one Group" << endl;
 	cout << "4. Show the Gnuplot graph with CAAR for all 3 groups" << endl;
 	cout << "5. Exit your program" << endl << endl;
 	cout << "Please enter a number from 1 to 5: ";
@@ -33,13 +33,9 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 		}
 		else {
 			cout << "    ";
-
 			read_obj.sort_by_suprise(stock_list);
-
 			data_container.Multi_thread_Download_stock(stock_list);
 			data_container.filter(data_container.stock_map, stock_list);//delete those stocks lack of data
-			//data_container.display();
-
 			BootStrapping obj(stock_list);
 			obj.set_benchmark(data_container);
 			obj.print_benchmark();
@@ -47,14 +43,9 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 			cout << "# Historical Data Retrieve Done. #" << endl << endl;
 			obj.Calculate(res_mat, data_container, 30, 30);
 			DataIsRetrived = true;
-
-
-
 			break;
 		}
 	}
-
-
 	case 2:
 	{
 		cout << endl;
@@ -68,9 +59,6 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 			cout << "Please enter a stock ticker: ";
 			cin >> stockChoice;
 
-
-
-
 			while (data_container.stock_map.count(stockChoice) == 0)
 			{
 				cout << endl;
@@ -80,7 +68,7 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 				cout << "Please enter a stock ticker: ";
 				cin >> stockChoice;
 			}
-			//map<string, stock*>::iterator iter;
+
 			auto iter = data_container.stock_map.find(stockChoice);
 			cout << "Please enter a stock ticker: ";
 			cout << endl;
@@ -94,17 +82,11 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 			cout << "Release Date " << get<2>(read_obj.info_map[stockChoice]) << endl;
 			cout << "Start of 61 Trading Days: " << iter->second->alltime[iter->second->start_index] << endl;
 			cout << "End of 61 Trading Days:   " << iter->second->alltime[iter->second->end_index] << endl;
-			cout << "price of 61 days" << endl;
-			for (int i = iter->second->start_index; i <= iter->second->end_index; i++) {
-				cout << "The price in " << iter->second->alltime[i] << "  is " << iter->second->adjustedprice[i] << endl;
-			}
-
+			cout << "price of 61 days" << endl;	
+			iter->second->display();//show the price and return of one stock
 			break;
 
 		}
-
-
-
 	}
 
 
@@ -160,8 +142,6 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 			break;
 		}
 		else {
-			// Plot the result
-			//cout << res_mat;
 			Plot_CAAR(res_mat, gnuplot_address);
 			cout << endl;
 			break;

@@ -1,5 +1,6 @@
 #include "BootStrapping.h"
 
+
 void BootStrapping::set_benchmark(StockData& data_container, string bench_mark_name)
 {
 	benchmark.clear();
@@ -57,7 +58,7 @@ void BootStrapping::print_benchmark() const
 {
 	cout << "benchmark : " << endl;
 	for_each(benchmark.begin(), benchmark.end(), [](pair<string, pair<double, double>> ele)
-		{cout << ele.first << "\t" << ele.second.first << "\t" << ele.second.second << endl; });
+	{cout << ele.first << "\t" << ele.second.first << "\t" << ele.second.second << endl; });
 }
 
 double BootStrapping::Stdev(Vector& series) const
@@ -102,6 +103,10 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 	const string date_suffix = "T16:00:00";
 	const int date_num = 30;
 	return_mat.resize(num_group);
+	vector<string> group_name; //the name of three groups
+	group_name.push_back("Miss estimate group");
+	group_name.push_back("Meat estimate group");
+	group_name.push_back("Beat estimate group");
 	for (int group_cont = 0; group_cont < num_group; group_cont++)//for each group (i.e. best/media/worst group)
 	{
 		Matrix AARt_mat(2 * date_num, Vector(sampling_times, 0));
@@ -110,29 +115,29 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 		{
 			vector<const pair<string, string>*> sample_name;
 			Sampling_name<pair<string, string>>(sample_name, groups[group_cont], sampling_num);//sample_name contains name,release_date of stocks
-			Matrix AAit(2 * date_num, Vector(sampling_num, 0));//(60*30) matrix
+			Matrix AAit(2 * date_num, Vector(sampling_num, 0));//(60*30) matrix  60days AR value of 30 stocks
 			int AAit_j = 0;
-			for (auto itr = sample_name.begin(); itr != sample_name.end(); itr++)//for each stock
+			for (auto itr = sample_name.begin(); itr != sample_name.end(); itr++)//for each stock in the bootstrapping sampling list
 			{
 				stock* current_stock_ptr = data_container.stock_map[(*itr)->first];
-				current_stock_ptr->group_number = group_cont;
-				string search_date = (*itr)->second;
-				int start_idx;
+				current_stock_ptr->group_number = group_name[group_cont]; //Get the group name of 
+				string search_date = (*itr)->second;//search the releash data within the vector
+				int start_idx, end_idx;
 				auto search_itr = find(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), search_date);
-				if (search_itr != current_stock_ptr->alltime.end())
-				{
-					start_idx = distance(current_stock_ptr->alltime.begin(), search_itr) - date_num;
+				if (search_itr != current_stock_ptr->alltime.end()) //means the data of release date can be found in yahoo
+				{// Since the length of data set is larger than 60, we need to find the start index and end index
+					start_idx = distance(current_stock_ptr->alltime.begin(), search_itr) - date_num; 
 					current_stock_ptr->start_index = start_idx;
-					int end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
+					end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
 					current_stock_ptr->end_index = end_idx;
 				}
-				else
+				else//if the data of release date cannot be found in yahoo, we use the day before the release until we find it
 				{
 					vector<int> alltime_sec;
 					for_each(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), [&](auto ele)
-						{
-							alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
-						}
+					{
+						alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
+					}
 					);
 					int search_date_sec = stoi(getTimeinSeconds(search_date + date_suffix));
 					auto search_sec_itr = find(alltime_sec.begin(), alltime_sec.end(), search_date_sec);
@@ -143,12 +148,11 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 					}
 					start_idx = distance(alltime_sec.begin(), search_sec_itr) - date_num;
 					current_stock_ptr->start_index = start_idx;
-					int end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
+					end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
 					current_stock_ptr->end_index = end_idx;
 				}
-
 				int AAit_i = 0;
-				for (int i = start_idx + 1; i < start_idx + 2 * date_num + 1; i++)//for each day
+				for (int i = start_idx + 1; i < end_idx + 1; i++)//for each day, calculate the abnormal return of one stock
 				{
 					if (isnan(current_stock_ptr->abnormal_return[i]))//if nan, then calculate and store it
 					{
@@ -160,27 +164,18 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 				}
 				AAit_j++;
 			}
-			Vector sample_AARt(AAit.size(), 0);
-			Vector sample_CAAR(AAit.size(), 0);
-			sample_AARt[0] = Mean(AAit[0]);
-			sample_CAAR[0] = sample_AARt[0];
-			for (int k = 1; k < AAit.size(); k++)
+			AARt_mat[0][j] = Mean(AAit[0]);//take average of abnormal return of 30 stocks
+			CAAR_mat[0][j] = Mean(AAit[0]);//take average of cumulative abnormal return 30 stocks
+			for (int k = 1; k < 60; k++)
 			{
-				sample_AARt[k] = Mean(AAit[k]);
-				sample_CAAR[k] = sample_CAAR[k - 1] + sample_AARt[k];
-			}
-			/*AARt = (1 / (j + 1)) * (j * AARt + sample_AARt);
-			CAAR = (1 / (j + 1)) * (j * CAAR + sample_CAAR);*/
-			for (int k = 0; k < 2 * date_num; k++)
-			{
-				AARt_mat[k][j] = sample_AARt[k];
-				CAAR_mat[k][j] = sample_CAAR[k];
+				AARt_mat[k][j] = Mean(AAit[k]); //put the average of 30 stocks into the big matrix
+				CAAR_mat[k][j] = CAAR_mat[k - 1][j] + AARt_mat[k][j];
 			}
 		}
-		Vector AAR(AARt_mat.size(), 0);
-		Vector AAR_SD(AARt_mat.size(), 0);
-		Vector CAAR(CAAR_mat.size(), 0);
-		Vector CAAR_SD(CAAR_mat.size(), 0);
+		Vector AAR(AARt_mat.size(), 0);  //a vector of 60 days, each value in it is the average of AAR of 30 bootstrapping samplings
+		Vector AAR_SD(AARt_mat.size(), 0);//a vector of 60 days, each value in it is the standard deviation of AAR of 30 bootstrapping samplings
+		Vector CAAR(CAAR_mat.size(), 0);//a vector of 60 days, each value in it is the average of CAAR of 30 bootstrapping samplings
+		Vector CAAR_SD(CAAR_mat.size(), 0);//a vector of 60 days, each value in it is the standard deviation of CAAR of 30 bootstrapping samplings
 		for (int k = 0; k < 2 * date_num; k++)
 		{
 			AAR[k] = Mean(AARt_mat[k]);
@@ -188,7 +183,7 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 			CAAR[k] = Mean(CAAR_mat[k]);
 			CAAR_SD[k] = Stdev(CAAR_mat[k]);
 		}
-		Matrix temp = { AAR,AAR_SD,CAAR,CAAR_SD };
+		Matrix temp = { AAR,AAR_SD,CAAR,CAAR_SD }; //these are four indexs of one group
 		return_mat[group_cont] = temp;
 	}
 }

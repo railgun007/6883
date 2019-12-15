@@ -9,41 +9,31 @@
 #include <time.h>
 
 using namespace std;
-//typedef vector<double> Vector;
-//typedef vector<Vector> Matrix;
-//typedef vector<Matrix> HMatrix;
-
 class BootStrapping
 {
 public:
 	int num_group = 3;
-	map<string, pair<double, double>>benchmark;
-	vector<vector<pair<string, string>>>groups;
-	vector<pair<string, string>> stock_list;
-	BootStrapping(vector<pair<string, string>> vec) :stock_list(vec) { Divide_vector(vec); };
+	map<string, pair<double, double>>benchmark;//string is the date  the double pair is price and return
+	vector<vector<pair<string, string>>>groups; //the string pair is the name and date
+	vector<pair<string, string>> stock_list;   //a vector of stock name and release date
+	BootStrapping(vector<pair<string, string>> vec) :stock_list(vec) { Divide_vector(vec); };//divide stock into 3 groups when calling constructor
 	template<typename T>
-	void Sampling_name(vector<const T*>& return_vec, const vector<T>& group, int sampling_num) const;
-	//void Sampling_name(vector<const pair<string, string>*>& return_vec, const vector<pair<string, string>>& group, int sampling_num) const;
-	void set_benchmark(StockData& data_container, string bench_mark_name = "SPY");
-	void print_benchmark() const;
-	void Calculate(HMatrix& return_mat, StockData& data_container, int sampling_num, int sampling_time);
-	double Stdev(Vector& series) const;
-	double Mean(Vector& series) const;
-	void Divide_vector(const vector<pair<string, string>>& vec);
+	void Sampling_name(vector<const T*>& return_vec, const vector<T>& group, int sampling_num) const;//choose 30 stocks from one group
+	void set_benchmark(StockData& data_container, string bench_mark_name = "SPY");//read the benchmark data and save it in a container
+	void print_benchmark() const;//print the value of benchmark and its date
+	void Calculate(HMatrix& return_mat, StockData& data_container, int sampling_num, int sampling_time);//calcluate AAR CAAR AAR-SD CAAR-SD
+	double Stdev(Vector& series) const;//the method to calculate standard deviation of value
+	double Mean(Vector& series) const;//the method to calculate mean of value
+	void Divide_vector(const vector<pair<string, string>>& vec);//divide stock into 3 groups 
 };
 
 template<typename T>
-void BootStrapping::Sampling_name(vector<const T*>& return_vec, const vector<T>& group, int sampling_num) const //must define here, otherwise Link error
+void BootStrapping::Sampling_name(vector<const T*>& return_vec, const vector<T>& group, int sampling_num) const // define here, otherwise Link error
 {
-	srand(clock());
-	return_vec.resize(sampling_num);
-	if (group.size() < sampling_num) { return; }
 	vector<int> vect;
 	for (int i = 0; i < group.size(); i++) vect.push_back(i);
-	random_shuffle(vect.begin(), vect.end());
-	for (int i = 0; i < return_vec.size(); i++)
-	{
-		return_vec[i] = &group[vect[i]];
-	}
+	random_shuffle(vect.begin(), vect.end());//change the location of all value in this vector
+	for (int i = 0; i < sampling_num; i++)  return_vec.push_back(&group[vect[i]]);
+
 }
 #endif // !BootStrapping_h

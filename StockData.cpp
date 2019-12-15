@@ -32,7 +32,7 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 				}
 
 				curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data2);
-				curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&data);
+				curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)& data);
 
 				// perform, then store the expected code in result
 				result = curl_easy_perform(handle);
@@ -46,10 +46,12 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 
 				char cKey[] = "CrumbStore\":{\"crumb\":\"";
 				char* ptr1 = strstr(data.memory, cKey);
+				if (ptr1 == NULL)
+					throw - 1;
 				char* ptr2 = ptr1 + strlen(cKey);
 				char* ptr3 = strstr(ptr2, "\"}");
 				if (ptr3 != NULL)
-					*ptr3 = NULL;
+					* ptr3 = NULL;
 
 				sCrumb = ptr2;
 
@@ -68,11 +70,6 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 				data.size = 0;
 			}
 
-			/*if (itr == stock_list.end())
-			{
-				break;
-			}*/
-
 			string urlA = "https://query1.finance.yahoo.com/v7/finance/download/";
 			string symbol = name;
 			string urlB = "?period1=";
@@ -84,23 +81,9 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 			curl_easy_setopt(handle, CURLOPT_COOKIE, cookies);   // Only needed for 1st stock
 			curl_easy_setopt(handle, CURLOPT_URL, cURL);
 
-			/*
-			fp = fopen(resultfilename, "ab");
-			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
-			curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
-			result = curl_easy_perform(handle);
-			fclose(fp);
-
-			// Check for errors
-			if (result != CURLE_OK)
-			{
-				// if errors have occurred, tell us what is wrong with 'result'
-				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(result));
-				return 1;
-			}
-		*/
+			
 			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data2);
-			curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&data);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)& data);
 			result = curl_easy_perform(handle);
 			if (result != CURLE_OK)
 			{
@@ -108,16 +91,6 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(result));
 				return 1;
 			}
-
-			//stringstream sData;
-			//sData.str(data.memory);
-			//string line;
-			//getline(sData, line);
-			//cout << line << endl;
-			//for (; getline(sData, line); )
-			//	cout << line << endl;
-
-			/*stock* newstock = new stock((*itr).first, "2019-02-01");*/
 			stringstream sData;
 			sData.str(data.memory);
 			string sValue, sDate;
@@ -127,7 +100,6 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 
 
 			while (getline(sData, line)) {
-				//cout << line << endl;
 				sDate = line.substr(0, line.find_first_of(','));
 				line.erase(line.find_last_of(','));
 				sValue = line.substr(line.find_last_of(',') + 1);
@@ -135,16 +107,18 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 				newstock->adjustedprice.push_back(dValue);
 				newstock->alltime.push_back(sDate);
 				newstock->abnormal_return.push_back(NAN);
-				//   cout << sDate << " " << std::fixed << ::setprecision(6) << dValue << endl;
-
 				execute_flag = false;
 			}
 		}
-		catch (...)
+		catch (int e)
 		{
+			cout << "there is a bug"<<e<<endl;
 			newstock->abnormal_return.clear();
 			newstock->adjustedprice.clear();
 			newstock->alltime.clear();
+			free(data.memory);
+			data.memory = NULL;
+			data.size = 0;
 			execute_flag = true;
 		}
 	}
@@ -152,19 +126,11 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 
 void stock::display()
 {
-	for (auto i = 0; i < alltime.size(); i++)
+	for (auto i = start_index; i <= end_index; i++)
 	{
-		cout << alltime[i] << "\t" << adjustedprice[i] << "\t" << abnormal_return[i] << endl;
+		cout <<"in date "<< alltime[i] <<" the price is "<<adjustedprice[i] << "\t" <<"return is "<< abnormal_return[i]  << endl;
 	}
 	cout << "stock destructor called" << endl;
-}
-void StockData::display()
-{
-	for (auto itr = stock_map.begin(); itr != stock_map.end(); itr++)
-	{
-		cout << "stock name: " << (*itr).first << endl;
-		(*itr).second->display();
-	}
 }
 StockData::~StockData()
 {
@@ -193,7 +159,7 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list, map<stri
 	const char resultfilename[FILENAME_MAX] = "Results.txt";
 
 	// declaration of an object CURL 
-	CURL* handle;
+	CURL* handle=NULL;
 
 	CURLcode result;
 
