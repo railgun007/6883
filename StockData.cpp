@@ -3,7 +3,8 @@
 int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct& data, const char outfilename[FILENAME_MAX], CURL* handle, FILE* fp, CURLcode& result)
 {
 	bool execute_flag = true;
-	while (execute_flag)
+	int loop_limit = 100;
+	while (execute_flag && loop_limit)
 	{
 		try
 		{
@@ -32,7 +33,7 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 				}
 
 				curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data2);
-				curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)& data);
+				curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&data);
 
 				// perform, then store the expected code in result
 				result = curl_easy_perform(handle);
@@ -51,7 +52,7 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 				char* ptr2 = ptr1 + strlen(cKey);
 				char* ptr3 = strstr(ptr2, "\"}");
 				if (ptr3 != NULL)
-					* ptr3 = NULL;
+					*ptr3 = NULL;
 
 				sCrumb = ptr2;
 
@@ -81,9 +82,9 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 			curl_easy_setopt(handle, CURLOPT_COOKIE, cookies);   // Only needed for 1st stock
 			curl_easy_setopt(handle, CURLOPT_URL, cURL);
 
-			
+
 			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data2);
-			curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)& data);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&data);
 			result = curl_easy_perform(handle);
 			if (result != CURLE_OK)
 			{
@@ -112,7 +113,7 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 		}
 		catch (int e)
 		{
-			cout << "there is a bug"<<e<<endl;
+			cout << "there is a bug" << e << endl;
 			newstock->abnormal_return.clear();
 			newstock->adjustedprice.clear();
 			newstock->alltime.clear();
@@ -120,6 +121,7 @@ int Download_data(stock* newstock, string name, string startTime, string endTime
 			data.memory = NULL;
 			data.size = 0;
 			execute_flag = true;
+			loop_limit--;
 		}
 	}
 }
@@ -128,9 +130,8 @@ void stock::display()
 {
 	for (auto i = start_index; i <= end_index; i++)
 	{
-		cout <<"in date "<< alltime[i] <<" the price is "<<adjustedprice[i] << "\t" <<"return is "<< abnormal_return[i]  << endl;
+		cout << "in date " << alltime[i] << " the price is " << adjustedprice[i] << "\t" << "return is " << abnormal_return[i] << endl;
 	}
-	cout << "stock destructor called" << endl;
 }
 StockData::~StockData()
 {
@@ -159,7 +160,7 @@ int StockData::Download_stock(vector<pair<string, string>>& stock_list, map<stri
 	const char resultfilename[FILENAME_MAX] = "Results.txt";
 
 	// declaration of an object CURL 
-	CURL* handle=NULL;
+	CURL* handle = NULL;
 
 	CURLcode result;
 
