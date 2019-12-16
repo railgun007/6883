@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <thread>
+#include <mutex>
 #include "WriteData.h"
 using namespace std;
 
@@ -20,7 +21,7 @@ public:
 	int start_index;   //we use start index and end index to get 60 days of data
 	int end_index;
 	string group_number;
-	vector<double> adjustedprice; 
+	vector<double> adjustedprice;
 	vector<string> alltime;
 	vector<double> abnormal_return;
 	void display();//display the price and return of a stock
@@ -34,5 +35,5 @@ public:
 	void filter(map<string, stock*>& stock_map, vector<pair<string, string>>& stock_list);//we filter the stock with data less than we want
 	~StockData();//destructor
 };
-int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct& data, const char outfilename[FILENAME_MAX], CURL* handle, FILE* fp, CURLcode& result);
+int Download_data(stock* newstock, string name, string startTime, string endTime, struct MemoryStruct& data, const char outfilename[FILENAME_MAX], CURL* handle, FILE* fp, CURLcode& result, string& sCookies, string& sCrumb);
 #endif // !StockData_h

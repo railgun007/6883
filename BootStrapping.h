@@ -30,10 +30,10 @@ public:
 template<typename T>
 void BootStrapping::Sampling_name(vector<const T*>& return_vec, const vector<T>& group, int sampling_num) const // define here, otherwise Link error
 {
+	srand(clock());
 	vector<int> vect;
 	for (int i = 0; i < group.size(); i++) vect.push_back(i);
 	random_shuffle(vect.begin(), vect.end());//change the location of all value in this vector
 	for (int i = 0; i < sampling_num; i++)  return_vec.push_back(&group[vect[i]]);
-
 }
 #endif // !BootStrapping_h

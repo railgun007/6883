@@ -7,7 +7,6 @@ using namespace std;
 
 int main()
 {
-
 	/*cout << read_obj.suprise << endl;*/
 	vector<pair<string, string>> stock_list;
 

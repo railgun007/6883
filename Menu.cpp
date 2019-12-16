@@ -82,7 +82,7 @@ void Menu(vector<pair<string, string>>& stock_list, StockData& data_container, R
 			cout << "Release Date " << get<2>(read_obj.info_map[stockChoice]) << endl;
 			cout << "Start of 61 Trading Days: " << iter->second->alltime[iter->second->start_index] << endl;
 			cout << "End of 61 Trading Days:   " << iter->second->alltime[iter->second->end_index] << endl;
-			cout << "price of 61 days" << endl;	
+			cout << "price of 61 days" << endl;
 			iter->second->display();//show the price and return of one stock
 			break;
 

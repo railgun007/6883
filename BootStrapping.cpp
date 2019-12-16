@@ -42,7 +42,69 @@ void BootStrapping::set_benchmark(StockData& data_container, string bench_mark_n
 		stock* new_bench_mark = new stock(bench_mark_name, "");
 		string startTime = to_string(smallest_time_sec);
 		string endTime = to_string(largest_time_sec);
-		Download_data(new_bench_mark, bench_mark_name, startTime, endTime, data, outfilename, handle, fp, result);
+		string sCookies, sCrumb;
+		if (sCookies.length() == 0 || sCrumb.length() == 0)
+		{
+			fp = fopen(outfilename, "w");
+			//curl_easy_setopt(handle, CURLOPT_URL, "https://finance.yahoo.com/quote/AMZN/history?p=AMZN");
+			curl_easy_setopt(handle, CURLOPT_URL, "https://finance.yahoo.com/quote/AMZN/history");
+			curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0);
+			curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0);
+			curl_easy_setopt(handle, CURLOPT_COOKIEJAR, "cookies.txt");
+			curl_easy_setopt(handle, CURLOPT_COOKIEFILE, "cookies.txt");
+
+			curl_easy_setopt(handle, CURLOPT_ENCODING, "");
+			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
+			result = curl_easy_perform(handle);
+			fclose(fp);
+
+			if (result != CURLE_OK)
+			{
+				// if errors have occurred, tell us what is wrong with result
+				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(result));
+				return;
+			}
+
+			curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, write_data2);
+			curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&data);
+
+			// perform, then store the expected code in result
+			result = curl_easy_perform(handle);
+
+			if (result != CURLE_OK)
+			{
+				// if errors have occured, tell us what is wrong with result
+				fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(result));
+				return;
+			}
+
+			char cKey[] = "CrumbStore\":{\"crumb\":\"";
+			char* ptr1 = strstr(data.memory, cKey);
+			if (ptr1 == NULL)
+				throw - 1;
+			char* ptr2 = ptr1 + strlen(cKey);
+			char* ptr3 = strstr(ptr2, "\"}");
+			if (ptr3 != NULL)
+				*ptr3 = NULL;
+
+			sCrumb = ptr2;
+
+			fp = fopen("cookies.txt", "r");
+			char cCookies[100];
+			if (fp) {
+				while (fscanf(fp, "%s", cCookies) != EOF);
+				fclose(fp);
+			}
+			else
+				cerr << "cookies.txt does not exists" << endl;
+
+			sCookies = cCookies;
+			free(data.memory);
+			data.memory = NULL;
+			data.size = 0;
+		}
+		Download_data(new_bench_mark, bench_mark_name, startTime, endTime, data, outfilename, handle, fp, result, sCookies, sCrumb);
 		benchmark.insert(pair<string, pair<double, double>>(new_bench_mark->alltime[0], pair<double, double>(new_bench_mark->adjustedprice[0], NAN)));
 		for (int i = 1; i < new_bench_mark->adjustedprice.size(); i++)
 		{
@@ -58,7 +120,7 @@ void BootStrapping::print_benchmark() const
 {
 	cout << "benchmark : " << endl;
 	for_each(benchmark.begin(), benchmark.end(), [](pair<string, pair<double, double>> ele)
-	{cout << ele.first << "\t" << ele.second.first << "\t" << ele.second.second << endl; });
+		{cout << ele.first << "\t" << ele.second.first << "\t" << ele.second.second << endl; });
 }
 
 double BootStrapping::Stdev(Vector& series) const
@@ -126,7 +188,7 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 				auto search_itr = find(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), search_date);
 				if (search_itr != current_stock_ptr->alltime.end()) //means the data of release date can be found in yahoo
 				{// Since the length of data set is larger than 60, we need to find the start index and end index
-					start_idx = distance(current_stock_ptr->alltime.begin(), search_itr) - date_num; 
+					start_idx = distance(current_stock_ptr->alltime.begin(), search_itr) - date_num;
 					current_stock_ptr->start_index = start_idx;
 					end_idx = distance(current_stock_ptr->alltime.begin(), search_itr) + date_num;
 					current_stock_ptr->end_index = end_idx;
@@ -135,9 +197,9 @@ void BootStrapping::Calculate(HMatrix& return_mat, StockData& data_container, in
 				{
 					vector<int> alltime_sec;
 					for_each(current_stock_ptr->alltime.begin(), current_stock_ptr->alltime.end(), [&](auto ele)
-					{
-						alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
-					}
+						{
+							alltime_sec.push_back(stoi(getTimeinSeconds(ele + date_suffix)));
+						}
 					);
 					int search_date_sec = stoi(getTimeinSeconds(search_date + date_suffix));
 					auto search_sec_itr = find(alltime_sec.begin(), alltime_sec.end(), search_date_sec);
